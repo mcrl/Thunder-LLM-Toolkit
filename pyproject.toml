@@ -1,0 +1,82 @@
+[project]
+name = "thunderllm"
+description = "Thunder Research Group's comprehensive LLM Toolkit"
+version = "0.0.1"
+requires-python = ">=3.11,<3.12"
+authors = [{name = "Jaejin Lee", email = "jaejin@snu.ac.kr"}]
+readme = "Readme.md"
+dependencies = [
+    "accelerate>=0.26.0",
+    "bs4",
+    "evaluate",
+    "datasets>=2.16.0",
+    "evaluate>=0.4.0",
+    "jsonlines",
+    "numexpr",
+    "peft>=0.2.0",
+    "pybind11>=2.6.2",
+    "pytablewriter",
+    "rouge-score>=0.0.4",
+    "sacrebleu>=1.5.0",
+    "scikit-learn>=0.24.1",
+    "sqlitedict",
+    "torch>=1.8",
+    "tqdm-multiprocess",
+    "transformers>=4.1",
+    "zstandard",
+    "dill",
+    "word2number",
+    "more_itertools",
+    "wandb",
+    "friendlywords",
+    "loguru",
+    "jsonargparse",
+    "wget",
+    "emoji",
+    "rich"
+]
+
+[tool.setuptools.packages.find]
+include = ["thunderllm*"]
+
+# required to include yaml files in pip installation
+[tool.setuptools.package-data]
+thunderllm = ["**/*.yaml", "tasks/**/*"]
+
+[project.scripts]
+thunderllm-eval = "thunderllm.evaluate_main:cli_evaluate"
+thunderllm_eval = "thunderllm.evaluate_main:cli_evaluate"
+thunderllm-chat = "thunderllm.chat_main:cli_chat"
+thunderllm_chat = "thunderllm.chat_main:cli_chat"
+thunderllm-eval-harness = "thunderllm.inference.__main__:cli_evaluate"
+thunderllm_eval_harness = "thunderllm.inference.__main__:cli_evaluate"
+
+[project.urls]
+Homepage = "https://champ.snu.ac.kr/"
+Repository = "https://github.com/mcrl/Thunder-LLM-Toolkit"
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-cov", "pytest-xdist", "pre-commit", "mypy"]
+math = ["sympy>=1.12", "antlr4-python3-runtime==4.11"]
+multilingual = ["nagisa>=0.2.7", "jieba>=0.42.1", "pycountry"]
+promptsource = ["promptsource>=0.2.3"]
+sentencepiece = ["sentencepiece>=0.1.98"]
+testing = ["pytest", "pytest-cov", "pytest-xdist"]
+vllm = ["vllm==0.5.4"]
+all = [
+    "thunderllm[dev]",
+    "thunderllm[math]",
+    "thunderllm[multilingual]",
+    "thunderllm[promptsource]",
+    "thunderllm[sentencepiece]",
+    "thunderllm[testing]",
+    "thunderllm[vllm]",
+]
+
+[tool.pytest.ini_options]
+addopts = "--strict-markers"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "cuda: tests that require cuda devices (deselect with '-m \"not cuda\"')",
+    "skip: tests that should be skipped (deselect with '-m \"not skip\"')",
+]

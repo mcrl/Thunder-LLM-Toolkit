@@ -1,0 +1,3 @@
+dataset_name: Telecommunications-and-Wireless-Technology
+include: _default_thunderllm-kmmlu_yaml
+task: thunderllm-kmmlu_default_telecommunications_and_wireless_technology

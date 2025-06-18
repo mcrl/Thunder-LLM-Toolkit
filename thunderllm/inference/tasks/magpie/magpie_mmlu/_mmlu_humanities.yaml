@@ -1,0 +1,9 @@
+group: magpie_mmlu_humanities
+group_alias: humanities
+task:
+  - magpie_mmlu_humanities_tasks
+aggregate_metric_list:
+  - metric: acc
+    weight_by_size: True
+metadata:
+  version: 2

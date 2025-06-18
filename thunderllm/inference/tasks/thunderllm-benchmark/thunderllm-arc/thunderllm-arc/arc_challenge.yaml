@@ -1,0 +1,4 @@
+include: arc_easy.yaml
+task: thunderllm-arc_challenge
+dataset_name: ARC-Challenge
+num_fewshot: 25

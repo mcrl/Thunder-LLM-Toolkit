@@ -1,0 +1,8 @@
+group: magpie_benchmark
+task:
+  - magpie_arc_challenge
+  - magpie_gsm8k
+  - magpie_hellaswag
+  - magpie_truthfulqa_mc1
+  - magpie_winogrande
+  - magpie_mmlu

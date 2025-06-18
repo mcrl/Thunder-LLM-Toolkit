@@ -1,0 +1,27 @@
+group: thunderllm-benchmark-full
+task:
+  # english - for Pretrained Model Evaluation
+  - thunderllm-hellaswag
+  - thunderllm-winogrande
+  - thunderllm-openbookqa
+  - thunderllm-arc_easy
+  - thunderllm-arc_challenge
+  - thunderllm-mmlu
+
+  # english - for Post-trained Model Evaluation
+  - thunderllm-gsm8k
+  - thunderllm-ifeval
+  # humaneval: currently not supported
+
+  # korean - for Pretrained Model Evaluation
+  - thunderllm-snu-ko-arc-easy
+  - thunderllm-snu-ko-arc-challenge
+  - thunderllm-snu-ko-winogrande
+  - thunderllm-snu-ko-lambada
+  - thunderllm-kobest_hellaswag
+  - thunderllm-kmmlu
+
+  # korean - for Post-trained Model Evaluation
+  - thunderllm-snu-ko-gsm8k
+  - thunderllm-snu-ko-ifeval
+  # kr humaneval: currently not supported

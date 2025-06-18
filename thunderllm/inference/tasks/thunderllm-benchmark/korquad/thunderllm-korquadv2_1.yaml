@@ -1,0 +1,7 @@
+task: thunderllm-korquadv2_1
+class: !function task.Korquad
+dataset_path: kmgme/KorQuADv2_1
+dataset_kwargs:
+  trust_remote_code: true
+training_split: train
+validation_split: validation

@@ -1,0 +1,44 @@
+group:
+  - math_word_problems
+task: thunderllm-snu-ko-gsm8k
+dataset_path: thunder-research-group/SNU_Ko-GSM8K
+output_type: generate_until
+training_split: test
+fewshot_split: test
+test_split: test
+doc_to_text: "문제: {{question}}\n답:"
+doc_to_target: "{{answer}}" #" {{answer.split('### ')[-1].rstrip()}}"
+metric_list:
+  - metric: exact_match
+    aggregation: mean
+    higher_is_better: true
+    ignore_case: true
+    ignore_punctuation: false
+    regexes_to_ignore:
+      - ","
+      - "원"
+      - "(?s).*#### "
+      - "\\.$"
+generation_kwargs:
+  until:_
+    - "문제:"
+    - "</s>"
+    - "<|im_end|>"
+  do_sample: false
+  temperature: 0.0
+repeats: 1
+num_fewshot: 5
+filter_list:
+  - name: "strict-match"
+    filter:
+      - function: "regex"
+        regex_pattern: "#### (\\-?[0-9\\.\\,]+)"
+      - function: "take_first"
+  - name: "flexible-extract"
+    filter:
+      - function: "regex"
+        group_select: -1
+        regex_pattern: "(-?[$0-9.,]{2,})|(-?[0-9]+)"
+      - function: "take_first"
+metadata:
+  version: 1.0

@@ -1,0 +1,6 @@
+[submodule "tokenizers"]
+	path = tokenizers
+	url = https://github.com/huggingface/tokenizers.git
+[submodule "esaxx-rs"]
+	path = esaxx-rs
+	url = https://github.com/Narsil/esaxx-rs.git

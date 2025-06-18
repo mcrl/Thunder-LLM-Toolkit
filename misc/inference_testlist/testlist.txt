@@ -1,0 +1,5 @@
+tests/inference/test_evaluator.py
+tests/inference/test_include_path.py
+tests/inference/test_misc.py
+tests/inference/test_tasks.py
+tests/inference/test_utils.py

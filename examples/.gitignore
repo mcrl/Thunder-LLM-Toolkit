@@ -1,0 +1,7 @@
+# All shell scripts in the repository must be added explicitly
+# otherwise they will be ignored by git
+*.sh
+
+# Shell scripts that are added to the repository
+!evaluate.sh
+!driver.sh

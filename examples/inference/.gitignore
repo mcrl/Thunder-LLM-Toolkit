@@ -1,0 +1,3 @@
+!run_cli.sh
+!run_generic_hf.sh
+!run_lmeval_reference.sh

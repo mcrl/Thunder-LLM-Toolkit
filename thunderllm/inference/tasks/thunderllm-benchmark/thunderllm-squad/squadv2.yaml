@@ -1,0 +1,2 @@
+task: thunderllm-squad
+class: !function task.SQuAD2

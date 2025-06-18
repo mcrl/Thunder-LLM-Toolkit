@@ -1,0 +1,208 @@
+"""
+Know What You Don’t Know: Unanswerable Questions for SQuAD
+https://arxiv.org/pdf/1806.03822.pdf
+
+Stanford Question Answering Dataset (SQuAD) is a reading comprehension dataset,
+consisting of questions posed by crowdworkers on a set of Wikipedia articles,
+where the answer to every question is a segment of text, or span, from the
+corresponding reading passage, or the question might be unanswerable.
+SQuAD2.0 combines the 100,000 questions in SQuAD1.1 with over 50,000 unanswerable
+questions written adversarially by crowdworkers to look similar to answerable ones.
+To do well on SQuAD2.0, systems must not only answer questions when possible, but
+also determine when no answer is supported by the paragraph and abstain from answering.
+
+Homepage: https://rajpurkar.github.io/SQuAD-explorer/
+"""
+
+
+import datasets
+from packaging import version
+
+from thunderllm.inference.api.instance import Instance
+from thunderllm.inference.api.task import ConfigurableTask
+from thunderllm.inference.api.metrics import mean
+import collections
+import re
+import string
+
+_CITATION = """
+@misc{rajpurkar2018know,
+    title={Know What You Don't Know: Unanswerable Questions for SQuAD},
+    author={Pranav Rajpurkar and Robin Jia and Percy Liang},
+    year={2018},
+    eprint={1806.03822},
+    archivePrefix={arXiv},
+    primaryClass={cs.CL}
+}
+"""
+ARTICLES_REGEX = re.compile(r"\b(a|an|the)\b", re.UNICODE)
+
+OPTS = None
+
+
+def make_qid_to_has_ans(dataset):
+    qid_to_has_ans = {}
+    for article in dataset:
+        for p in article["paragraphs"]:
+            for qa in p["qas"]:
+                qid_to_has_ans[qa["id"]] = bool(qa["answers"]["text"])
+    return qid_to_has_ans
+
+
+def normalize_answer(s):
+    """Lower text and remove punctuation, articles and extra whitespace."""
+
+    def remove_articles(text):
+        return ARTICLES_REGEX.sub(" ", text)
+
+    def white_space_fix(text):
+        return " ".join(text.split())
+
+    def remove_punc(text):
+        exclude = set(string.punctuation)
+        return "".join(ch for ch in text if ch not in exclude)
+
+    def lower(text):
+        return text.lower()
+
+    return white_space_fix(remove_articles(remove_punc(lower(s))))
+
+
+def get_tokens(s):
+    if not s:
+        return []
+    return normalize_answer(s).split()
+
+
+def compute_exact(a_gold, a_pred):
+    res = int(normalize_answer(a_gold) == normalize_answer(a_pred))
+    return res
+
+
+def compute_f1(a_gold, a_pred):
+    gold_toks = get_tokens(a_gold)
+    pred_toks = get_tokens(a_pred)
+    common = collections.Counter(gold_toks) & collections.Counter(pred_toks)
+    num_same = sum(common.values())
+    if len(gold_toks) == 0 or len(pred_toks) == 0:
+        # If either is no-answer, then F1 is 1 if they agree, 0 otherwise
+        return int(gold_toks == pred_toks)
+    if num_same == 0:
+        return 0
+    precision = 1.0 * num_same / len(pred_toks)
+    recall = 1.0 * num_same / len(gold_toks)
+    f1 = (2 * precision * recall) / (precision + recall)
+    return f1
+
+
+def compute_score(prediction_text, answers):
+    if not answers:
+        answers = ["Not in background"]
+    max_exact_score = max([compute_exact(answer, prediction_text)
+                          for answer in answers])
+    max_f1_score = max([compute_f1(answer, prediction_text)
+                       for answer in answers])
+    return max_exact_score, max_f1_score
+
+
+class SQuAD2(ConfigurableTask):
+    VERSION = 3
+    DATASET_PATH = "meta-llama/Meta-Llama-3.1-8B-evals"
+    DATASET_NAME = "Meta-Llama-3.1-8B-evals__squad__details"
+
+    def __init__(self, config=None):
+        super().__init__(
+            config={
+                "metadata": {"version": self.VERSION},
+                "dataset_path": config.get("dataset_path", self.DATASET_PATH),
+                "dataset_name": config.get("dataset_name", self.DATASET_NAME),
+            }
+        )
+
+    # HF changed squad on us so we have to make sure we aren't running the old one
+    assert version.parse(datasets.__version__) >= version.parse(
+        "1.11.0"
+    ), "datasets v1.11.0 or later required for SQuAD"
+
+    def has_training_docs(self):
+        return False
+
+    def has_validation_docs(self):
+        return True
+
+    def has_test_docs(self):
+        return False
+
+    def validation_docs(self):
+        return self.dataset["latest"]
+
+    def doc_to_text(self, doc):
+        return doc["input_question"]
+
+    def should_decontaminate(self):
+        return True
+
+    def doc_to_decontamination_query(self, doc):
+        return doc["input_question"]
+
+    def doc_to_target(self, doc):
+        answer_list = doc["input_correct_responses"]
+        return answer_list
+
+    def construct_requests(self, doc, ctx, **kwargs):
+        """Uses RequestFactory to construct Requests and returns an iterable of
+        Requests which will be sent to the LM.
+
+        :param doc:
+            The document as returned from training_docs, validation_docs, or test_docs.
+        :param ctx: str
+            The context string, generated by fewshot_context. This includes the natural
+            language description, as well as the few shot examples, and the question
+            part of the document for `doc`.
+        """
+
+        return [
+            Instance(
+                request_type="generate_until",
+                doc=doc,
+                arguments=(ctx, {"until": ["\n"]}),
+                idx=0,
+                **kwargs,
+            )
+        ]
+
+    def process_results(self, doc, results):
+        """Take a single document and the LM results and evaluates, returning a
+        dict where keys are the names of submetrics and values are the values of
+        the metric for that one document
+
+        :param doc:
+            The document as returned from training_docs, validation_docs, or test_docs.
+        :param results:
+            The results of the requests created in construct_requests.
+        """
+
+        continuation = results[0]
+
+        prediction_text = continuation
+        answers = doc["input_correct_responses"]
+        exact_match, f1_score = compute_score(prediction_text, answers)
+
+        return {"exact": exact_match, "f1": f1_score}
+
+    def aggregation(self):
+        """
+        :returns: {str: [float] -> float}
+            A dictionary where keys are the names of submetrics and values are
+            functions that aggregate a list of metrics
+        """
+        # get mean of all the metrics
+        return {"exact": mean, "f1": mean}
+
+    def higher_is_better(self):
+        """
+        :returns: {str: bool}
+            A dictionary where keys are the names of submetrics and values are
+            whether a higher value of the submetric is better
+        """
+        return {"exact": True, "f1": True}

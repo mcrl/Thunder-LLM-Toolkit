@@ -1,0 +1,12 @@
+group: magpie_mmlu
+task:
+  - magpie_mmlu_stem
+  - magpie_mmlu_other
+  - magpie_mmlu_social_sciences
+  - magpie_mmlu_humanities
+aggregate_metric_list:
+  - metric: acc
+    weight_by_size: True
+metadata:
+  version: 2
+num_fewshot: 5

@@ -1,0 +1,8 @@
+group: thunderllm-kmmlu
+task:
+  - thunderllm-kmmlu-default
+aggregate_metric_list:
+  - metric: acc
+    weight_by_size: False
+metadata:
+  version: 2

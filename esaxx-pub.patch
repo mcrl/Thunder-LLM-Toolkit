@@ -1,0 +1,35 @@
+From 0f38dba34b1a7afb89058057ad24e76ce7e9a656 Mon Sep 17 00:00:00 2001
+From: gyeongjecho <avq159@gmail.com>
+Date: Tue, 20 May 2025 11:20:32 +0900
+Subject: [PATCH] pub
+
+---
+ src/lib.rs | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/src/lib.rs b/src/lib.rs
+index 78fe639..41581ad 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -97,12 +97,12 @@ pub struct SuffixIterator<'a, T> {
+ }
+ 
+ pub struct Suffix<T> {
+-    chars: Vec<char>,
+-    sa: Vec<T>,
+-    l: Vec<T>,
+-    r: Vec<T>,
+-    d: Vec<T>,
+-    node_num: usize,
++    pub chars: Vec<char>,
++    pub sa: Vec<T>,
++    pub l: Vec<T>,
++    pub r: Vec<T>,
++    pub d: Vec<T>,
++    pub node_num: usize,
+ }
+ 
+ /// Creates the suffix array and provides an iterator over its items (Rust version)
+-- 
+2.25.1
+

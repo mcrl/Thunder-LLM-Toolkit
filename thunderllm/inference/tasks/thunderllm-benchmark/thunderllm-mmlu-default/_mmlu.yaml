@@ -1,0 +1,12 @@
+group: thunderllm-mmlu
+task:
+  - thunderllm-mmlu_stem
+  - thunderllm-mmlu_other
+  - thunderllm-mmlu_social_sciences
+  - thunderllm-mmlu_humanities
+aggregate_metric_list:
+  - metric: acc
+    weight_by_size: True
+metadata:
+  version: 2
+num_fewshot: 5
